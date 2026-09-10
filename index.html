@@ -71,7 +71,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:11px 9px;border-bottom:1
 </section>
 
 <section id="input" class="page">
-  <div class="card"><h2>Input Sponsorship</h2><div id="inputMsg"></div>
+  <div class="card"><h2 id="inputTitle">Input Sponsorship</h2><div id="inputMsg"></div>
     <div class="formgrid">
       <div><label>Nasabah *</label><input id="fNasabah" placeholder="Nama nasabah"></div>
       <div><label>Group Nasabah</label><input id="fGroup" placeholder="Group nasabah"></div>
@@ -87,7 +87,7 @@ table{width:100%;border-collapse:collapse}th,td{padding:11px 9px;border-bottom:1
       <button class="secondary" type="button" onclick="addSource()">+ Tambah Sumber Dana</button>
       <div class="totalbox"><span>Total Sponsorship</span><span id="sourceTotal">Rp 0</span></div>
     </div>
-    <div class="actions"><button class="secondary" onclick="page('dashboard',document.querySelector('.nav button'))">Batal</button><button class="primary" onclick="saveData()">Simpan Sponsorship</button></div>
+    <div class="actions"><button class="secondary" onclick="cancelInput()">Batal</button><button class="primary" id="saveInputBtn" onclick="saveData()">Simpan Sponsorship</button></div>
   </div>
 </section>
 
@@ -113,7 +113,7 @@ const SUPABASE_URL="https://txmxctzuhckexbkgbchy.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_oyyBZwodIFqtT5mUcvegnA_i5tKrxxO";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const SOURCES=['TBSVI8','TBWG','BU','Region','Area','Cabang','Lainnya'];
-let rows=[],fundRows=[],profile=null,reportRows=[];
+let rows=[],fundRows=[],profile=null,reportRows=[],editingId=null;
 const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 
@@ -174,11 +174,19 @@ async function saveData(){
  if(nres.error){inputMsg.innerHTML='<div class="notice err">'+esc(nres.error.message)+'</div>';return}
  if(!n){const ins=await db.from('nasabah').insert({nama:name,group_nasabah:group||null}).select('id').single();if(ins.error){inputMsg.innerHTML='<div class="notice err">'+esc(ins.error.message)+'</div>';return}n=ins.data}
  const {data:{user}}=await db.auth.getUser();
- const call=await db.rpc('create_sponsorship_with_funding',{p_nasabah_id:n.id,p_tanggal:tanggal,p_kegiatan:kegiatan,p_pic:pic,p_catatan:catatan||null,p_input_by:user.id,p_group_nasabah:group||null,p_sources:src});
+ let call;
+ if(editingId){
+   call=await db.rpc('update_sponsorship_with_funding',{p_sponsorship_id:editingId,p_nasabah_id:n.id,p_tanggal:tanggal,p_kegiatan:kegiatan,p_pic:pic,p_catatan:catatan||null,p_group_nasabah:group||null,p_sources:src});
+ } else {
+   call=await db.rpc('create_sponsorship_with_funding',{p_nasabah_id:n.id,p_tanggal:tanggal,p_kegiatan:kegiatan,p_pic:pic,p_catatan:catatan||null,p_input_by:user.id,p_group_nasabah:group||null,p_sources:src});
+ }
  if(call.error){inputMsg.innerHTML='<div class="notice err">'+esc(call.error.message)+'</div>';return}
- inputMsg.innerHTML='<div class="notice ok">Sponsorship berhasil disimpan.</div>';
+ inputMsg.innerHTML='<div class="notice ok">'+(editingId?'Sponsorship berhasil diperbarui.':'Sponsorship berhasil disimpan.')+'</div>';
+ editingId=null;
+ inputTitle.textContent='Input Sponsorship';saveInputBtn.textContent='Simpan Sponsorship';
  ['fNasabah','fGroup','fKegiatan','fPic','fCatatan'].forEach(id=>document.getElementById(id).value='');
  sourceRows.innerHTML='';addSource();await load();
+ page('report',document.querySelectorAll('.nav button')[3]);runReport();
 }
 function searchNasabah(){
  const q=searchNasabahEl().value.trim().toLowerCase();
@@ -188,14 +196,36 @@ function searchNasabah(){
 function searchNasabahEl(){return document.getElementById('searchNasabah')}
 function detailNasabah(id){
  const n=rows.find(r=>r.nasabah?.id===id)?.nasabah,rs=rows.filter(r=>r.nasabah?.id===id),total=rs.reduce((a,r)=>a+Number(r.nominal||0),0);
- nasabahDetail.innerHTML=`<div class="card"><h2>${esc(n?.nama)}</h2><p><b>Group:</b> ${esc(n?.group_nasabah||'-')} &nbsp; <b>Total sponsorship:</b> ${rupiah(total)} &nbsp; <b>Jumlah:</b> ${rs.length}</p><table><tr><th>Tanggal</th><th>Kegiatan</th><th>Nominal</th><th>Sumber Dana</th><th>PIC</th><th>Catatan</th></tr>${rs.map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>f.sumber_dana+' '+rupiah(f.nominal)).join('<br>')}</td><td>${esc(r.pic)}</td><td>${esc(r.catatan)}</td></tr>`).join('')}</table></div>`;
+ nasabahDetail.innerHTML=`<div class="card"><h2>${esc(n?.nama)}</h2><p><b>Group:</b> ${esc(n?.group_nasabah||'-')} &nbsp; <b>Total sponsorship:</b> ${rupiah(total)} &nbsp; <b>Jumlah:</b> ${rs.length}</p><table><tr><th>Tanggal</th><th>Kegiatan</th><th>Nominal</th><th>Sumber Dana</th><th>PIC</th><th>Catatan</th><th>Aksi</th></tr>${rs.map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>f.sumber_dana+' '+rupiah(f.nominal)).join('<br>')}</td><td>${esc(r.pic)}</td><td>${esc(r.catatan)}</td><td><button class="secondary" onclick="editSponsorship(${r.id})">Edit</button></td></tr>`).join('')}</table></div>`;
 }
 function filtered(){
  const from=rFrom.value,to=rTo.value,n=rNasabah.value.trim().toLowerCase(),p=rPic.value.trim().toLowerCase(),s=rSource.value;
  return rows.filter(r=>(!from||r.tanggal>=from)&&(!to||r.tanggal<=to)&&(!n||(r.nasabah?.nama||'').toLowerCase().includes(n))&&(!p||(r.pic||'').toLowerCase().includes(p))&&(!s||fundRows.some(f=>f.sponsorship_id===r.id&&f.sumber_dana===s)));
 }
 function runReport(){
- reportRows=filtered();reportTable.innerHTML=reportRows.length?'<table><tr><th>Tanggal</th><th>Nasabah</th><th>Group</th><th>Kegiatan</th><th>Total</th><th>Sumber Dana</th><th>PIC</th></tr>'+reportRows.map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.nasabah?.nama)}</td><td>${esc(r.nasabah?.group_nasabah||'-')}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>`${f.sumber_dana}: ${rupiah(f.nominal)}`).join('<br>')}</td><td>${esc(r.pic)}</td></tr>`).join('')+'</table>':'<p class="muted">Tidak ada data.</p>';
+ reportRows=filtered();reportTable.innerHTML=reportRows.length?'<table><tr><th>Tanggal</th><th>Nasabah</th><th>Group</th><th>Kegiatan</th><th>Total</th><th>Sumber Dana</th><th>PIC</th><th>Aksi</th></tr>'+reportRows.map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.nasabah?.nama)}</td><td>${esc(r.nasabah?.group_nasabah||'-')}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>`${f.sumber_dana}: ${rupiah(f.nominal)}`).join('<br>')}</td><td>${esc(r.pic)}</td><td><button class="secondary" onclick="editSponsorship(${r.id})">Edit</button></td></tr>`).join('')+'</table>':'<p class="muted">Tidak ada data.</p>';
+}
+function editSponsorship(id){
+ const r=rows.find(x=>x.id===id);if(!r)return;
+ editingId=id;
+ page('input',document.querySelectorAll('.nav button')[2]);
+ inputTitle.textContent='Edit Sponsorship';saveInputBtn.textContent='Simpan Perubahan';inputMsg.innerHTML='';
+ fNasabah.value=r.nasabah?.nama||'';fGroup.value=r.nasabah?.group_nasabah||'';fTanggal.value=r.tanggal||'';fKegiatan.value=r.kegiatan||'';fPic.value=r.pic||'';fCatatan.value=r.catatan||'';
+ sourceRows.innerHTML='';
+ const funds=fundRows.filter(f=>f.sponsorship_id===id);
+ (funds.length?funds:[{sumber_dana:'Lainnya',nominal:Number(r.nominal)||0}]).forEach(f=>{
+   const d=document.createElement('div');d.className='source-row';
+   d.innerHTML=`<select>${SOURCES.map(s=>`<option ${s===f.sumber_dana?'selected':''}>${s}</option>`).join('')}</select><input type="number" min="1" step="1000" placeholder="Nominal" value="${Number(f.nominal)||0}" oninput="calcTotal()"><button type="button" onclick="this.parentElement.remove();calcTotal()">×</button>`;
+   sourceRows.appendChild(d);
+ });
+ calcTotal();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelInput(){
+ editingId=null;inputTitle.textContent='Input Sponsorship';saveInputBtn.textContent='Simpan Sponsorship';inputMsg.innerHTML='';
+ ['fNasabah','fGroup','fKegiatan','fPic','fCatatan'].forEach(id=>document.getElementById(id).value='');
+ sourceRows.innerHTML='';addSource();
+ page('dashboard',document.querySelector('.nav button'));
 }
 function exportCSV(){
  reportRows=filtered();if(!reportRows.length){alert('Tidak ada data untuk diexport.');return}
