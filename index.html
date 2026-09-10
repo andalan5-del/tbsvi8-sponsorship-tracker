@@ -4,120 +4,186 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TBSVI8 Sponsorship Tracker V1</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--nav:#172235;--blue:#2563eb;--bg:#f5f7fb;--card:#fff;--text:#182338;--muted:#718096;--line:#e6eaf0}
 *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
 .app{display:flex;min-height:100vh}.side{width:220px;background:var(--nav);color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0}.brand{font-weight:800;letter-spacing:1px;font-size:15px;padding:4px 12px 28px}.brand span{display:block;font-size:10px;letter-spacing:2px;opacity:.65;margin-top:4px}
-.nav button{width:100%;background:none;border:0;color:#d9e0ea;text-align:left;padding:13px 14px;border-radius:9px;margin:3px 0;font-size:14px;cursor:pointer}.nav button.active,.nav button:hover{background:#2457a7;color:#fff}.user{position:absolute;bottom:20px;left:14px;right:14px;border-top:1px solid #314057;padding:18px 10px 0;font-size:13px}.user small{color:#91a0b6}
-.main{margin-left:220px;width:calc(100% - 220px);padding:22px 28px}.top{display:flex;gap:14px;align-items:center;margin-bottom:24px}.search{flex:1;max-width:560px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 15px;font-size:14px}.date{margin-left:auto;color:var(--muted);font-size:13px}
-.page{display:none}.page.active{display:block}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.title h1{margin:0;font-size:27px}.title p{margin:5px 0 0;color:var(--muted);font-size:13px}
-.primary{background:var(--blue);color:#fff;border:0;border-radius:9px;padding:12px 16px;font-weight:700;cursor:pointer}.secondary{background:#fff;border:1px solid var(--line);padding:11px 16px;border-radius:8px;cursor:pointer}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}.stat .label{color:var(--muted);font-size:12px}.stat .value{font-size:24px;font-weight:800;margin-top:8px}.layout2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px}.layout2b{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:14px}.card h3{margin:0 0 15px;font-size:15px}
-.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line)}.table th{color:var(--muted);font-weight:600}
-.barwrap{display:flex;align-items:end;gap:10px;height:180px;padding:12px 4px 0}.bar{flex:1;background:#8eb8f5;border-radius:5px 5px 0 0;min-height:12px;position:relative}.bar.current{background:#2563eb}.bar span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted)}
-.form{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:700}.field input,.field textarea{border:1px solid var(--line);border-radius:8px;padding:11px;font:inherit;background:#fff}.field textarea{min-height:90px;resize:vertical}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
-.client-search{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}.client-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.client{cursor:pointer}.client:hover{border-color:#9bbcf3}.client strong{display:block}.client small{color:var(--muted)}
-.profile{display:grid;grid-template-columns:1fr 2fr;gap:14px}.big{font-size:30px;font-weight:800;margin:8px 0}.muted{color:var(--muted);font-size:12px}.report-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.report-controls input{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
-.notice{background:#eef5ff;border:1px solid #cfe0ff;padding:12px;border-radius:9px;font-size:12px;color:#315b9d;margin-bottom:14px}
-@media(max-width:900px){.side{width:72px}.brand{font-size:0}.brand:before{content:"T8";font-size:18px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:18px}.user{font-size:0}.main{margin-left:72px;width:calc(100% - 72px);padding:16px}.grid4{grid-template-columns:repeat(2,1fr)}.layout2,.layout2b,.profile{grid-template-columns:1fr}.client-list{grid-template-columns:1fr}.top .date{display:none}}
+.nav button{width:100%;background:none;border:0;color:#d9e0ea;text-align:left;padding:13px 14px;border-radius:9px;margin:3px 0;font-size:14px;cursor:pointer}.nav button.active,.nav button:hover{background:#2457a7;color:#fff}.user{position:absolute;bottom:20px;left:18px;right:18px;font-size:12px;color:#d9e0ea}
+.main{margin-left:220px;width:calc(100% - 220px);padding:28px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.title h1{margin:0;font-size:24px}.title p{margin:5px 0;color:var(--muted)}
+.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 2px 8px #00000008;margin-bottom:18px}.metric .label{font-size:13px;color:var(--muted)}.metric .value{font-size:24px;font-weight:800;margin-top:8px}
+button{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f7;color:#27364d}.danger{background:#b42318;color:#fff}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}input,textarea{width:100%;padding:10px 11px;border:1px solid #ccd3df;border-radius:8px;font:inherit}textarea{min-height:80px}
+table{width:100%;border-collapse:collapse}th,td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{background:#f8fafc}.muted{color:var(--muted)}
+.search{display:flex;gap:10px}.search input{flex:1}.notice{padding:11px 13px;border-radius:8px;background:#fff4e5;margin:10px 0}.ok{background:#ecfdf3}.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.login .box{width:420px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px}.login h1{margin:0 0 6px}.hidden{display:none!important}
+@media(max-width:800px){.side{width:180px}.main{margin-left:180px;width:calc(100% - 180px)}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.side{position:static;width:100%;min-height:auto}.app{display:block}.main{margin:0;width:100%;padding:18px}.grid,.formgrid{grid-template-columns:1fr}.user{position:static;margin-top:20px}.search{flex-direction:column}}
 </style>
 </head>
 <body>
-<div class="app">
-<aside class="side">
-<div class="brand">TBSVI8<span>SPONSORSHIP TRACKER V1</span></div>
-<nav class="nav">
-<button class="active" data-page="dashboard">⌂ &nbsp; Dashboard</button>
-<button data-page="nasabah">♙ &nbsp; Nasabah</button>
-<button data-page="sponsorship">▣ &nbsp; Sponsorship</button>
-<button data-page="report">▥ &nbsp; Report</button>
-</nav>
-<div class="user"><b id="currentUser">Titah</b><br><small>Shared access</small></div>
-</aside>
 
-<main class="main">
-<div class="top"><input id="globalSearch" class="search" placeholder="Cari nasabah, kegiatan, atau PIC..."><div class="date" id="today"></div></div>
-
-<section id="dashboard" class="page active">
-<div class="title"><div><h1>Dashboard</h1><p>Ringkasan sponsorship yang sudah dibayarkan.</p></div><button class="primary" onclick="showPage('sponsorship')">＋ Input Sponsorship</button></div>
-<div class="grid4">
-<div class="stat"><div class="label">Total Nasabah</div><div class="value" id="statClients">0</div></div>
-<div class="stat"><div class="label">Total Sponsorship</div><div class="value" id="statRequests">0</div></div>
-<div class="stat"><div class="label">Total Nominal</div><div class="value" id="statTotal">Rp 0</div></div>
-<div class="stat"><div class="label">Bulan Ini</div><div class="value" id="statMonth">Rp 0</div></div>
+<div id="loginView" class="login">
+  <div class="box">
+    <h1>TBSVI8 Sponsorship Tracker V1</h1>
+    <p class="muted">Login dengan username dan password.</p>
+    <div id="loginMsg"></div>
+    <label>Username</label>
+    <input id="username" autocomplete="username" placeholder="Username">
+    <br><br>
+    <label>Password</label>
+    <input id="password" type="password" autocomplete="current-password" placeholder="Password">
+    <br><br>
+    <button class="primary" style="width:100%" onclick="login()">Login</button>
+  </div>
 </div>
-<div class="layout2"><div class="card"><h3>Sponsorship Terbaru</h3><div id="recent"></div></div><div class="card"><h3>Nasabah Terbesar</h3><div id="topClients"></div></div></div>
-<div class="layout2b"><div class="card"><h3>Sponsorship per Bulan</h3><div class="barwrap" id="bars"></div></div><div class="card"><h3>Ringkasan</h3><div id="summary"></div></div></div>
-</section>
 
-<section id="nasabah" class="page">
-<div class="title"><div><h1>Nasabah</h1><p>Cari nasabah dan lihat seluruh histori sponsorship.</p></div><button class="primary" onclick="newNasabah()">＋ Tambah Sponsorship</button></div>
-<div class="card"><input id="clientSearch" class="client-search" placeholder="Cari nama nasabah..."><div id="clientList" class="client-list"></div></div>
-</section>
+<div id="appView" class="app hidden">
+  <aside class="side">
+    <div class="brand">TBSVI8<span>SPONSORSHIP TRACKER V1</span></div>
+    <div class="nav">
+      <button class="active" onclick="page('dashboard',this)">Dashboard</button>
+      <button onclick="page('nasabah',this)">Nasabah</button>
+      <button onclick="page('input',this)">Input Sponsorship</button>
+      <button onclick="page('report',this)">Report</button>
+    </div>
+    <div class="user" id="userInfo"></div>
+  </aside>
+  <main class="main">
+    <div class="top"><div class="title"><h1 id="pageTitle">Dashboard</h1><p>Data sponsorship bersama</p></div><button class="secondary" onclick="logout()">Logout</button></div>
 
-<section id="sponsorship" class="page">
-<div class="title"><div><h1>Input Sponsorship</h1><p>Setiap data yang disimpan dianggap sudah dibayarkan.</p></div></div>
-<div class="notice">Tidak ada status. Data yang masuk ke sistem = sponsorship sudah dibayarkan.</div>
-<div class="card"><form id="sponsorForm"><div class="form">
-<div class="field"><label>Nasabah</label><input id="fClient" required placeholder="Contoh: PT Maju Bersama"></div>
-<div class="field"><label>Tanggal</label><input id="fDate" type="date" required></div>
-<div class="field"><label>Kegiatan</label><input id="fEvent" required placeholder="Nama kegiatan"></div>
-<div class="field"><label>Nominal</label><input id="fAmount" type="number" min="0" required placeholder="10000000"></div>
-<div class="field"><label>PIC</label><input id="fPic" required placeholder="Nama PIC"></div>
-<div class="field full"><label>Catatan</label><textarea id="fNote" placeholder="Catatan tambahan (opsional)"></textarea></div>
-</div><div class="actions"><button type="button" class="secondary" onclick="showPage('dashboard')">Batal</button><button class="primary">Simpan Sponsorship</button></div></form></div>
-</section>
+    <section id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card metric"><div class="label">Total Nasabah</div><div class="value" id="totalNasabah">0</div></div>
+        <div class="card metric"><div class="label">Total Sponsorship</div><div class="value" id="totalSponsorship">0</div></div>
+        <div class="card metric"><div class="label">Total Nominal</div><div class="value" id="totalNominal">Rp 0</div></div>
+        <div class="card metric"><div class="label">Bulan Ini</div><div class="value" id="bulanIni">Rp 0</div></div>
+      </div>
+      <div class="card"><h2>Nasabah dengan sponsorship terbesar</h2><div id="topList"></div></div>
+    </section>
 
-<section id="report" class="page">
-<div class="title"><div><h1>Report</h1><p>Rekap sponsorship berdasarkan data yang sudah dibayarkan.</p></div><button class="primary" onclick="exportCSV()">Export CSV</button></div>
-<div class="card"><div class="report-controls"><input id="rSearch" placeholder="Cari nasabah / PIC / kegiatan..."></div><div id="reportTable"></div></div>
-</section>
+    <section id="nasabah" class="page">
+      <div class="card"><h2>Cari Nasabah</h2><div class="search"><input id="searchNasabah" placeholder="Ketik nama nasabah..." oninput="searchNasabah()"><button class="primary" onclick="searchNasabah()">Cari</button></div></div>
+      <div id="nasabahResults"></div><div id="nasabahDetail"></div>
+    </section>
 
-<section id="profile" class="page">
-<div class="title"><div><h1 id="profileName">Nasabah</h1><p>Detail histori sponsorship.</p></div><button class="secondary" onclick="showPage('nasabah')">← Kembali</button></div>
-<div id="profileContent"></div>
-</section>
-</main></div>
+    <section id="input" class="page">
+      <div class="card"><h2>Input Sponsorship</h2><div id="inputMsg"></div>
+        <div class="formgrid">
+          <div><label>Nasabah</label><input id="fNasabah" placeholder="Nama nasabah"></div>
+          <div><label>Tanggal</label><input id="fTanggal" type="date"></div>
+          <div><label>Kegiatan</label><input id="fKegiatan" placeholder="Nama kegiatan"></div>
+          <div><label>Nominal</label><input id="fNominal" type="number" min="0" placeholder="0"></div>
+          <div><label>PIC</label><input id="fPic" placeholder="Nama PIC"></div>
+          <div><label>Catatan (opsional)</label><input id="fCatatan" placeholder="Catatan"></div>
+        </div><br><button class="primary" onclick="saveData()">Simpan Sponsorship</button>
+      </div>
+    </section>
+
+    <section id="report" class="page">
+      <div class="card"><h2>Report</h2>
+        <div class="formgrid">
+          <div><label>Dari tanggal</label><input id="rFrom" type="date"></div>
+          <div><label>Sampai tanggal</label><input id="rTo" type="date"></div>
+          <div><label>Nasabah</label><input id="rNasabah" placeholder="Opsional"></div>
+          <div><label>PIC</label><input id="rPic" placeholder="Opsional"></div>
+        </div><br>
+        <button class="primary" onclick="runReport()">Tampilkan</button>
+        <button class="secondary" onclick="exportCSV()">Export CSV</button>
+      </div>
+      <div class="card"><div id="reportTable"></div></div>
+    </section>
+  </main>
+</div>
 
 <script>
-const KEY='TBSVI8_Sponsorship_Tracker_V1';
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||[
-{client:'PT Maju Bersama',date:'2026-09-08',event:'Seminar Pendidikan',amount:10000000,pic:'Rina',note:''},
-{client:'PT Global Media',date:'2026-09-05',event:'Media Gathering',amount:7500000,pic:'Budi',note:''},
-{client:'PT Nusantara Energi',date:'2026-09-03',event:'Turnamen Golf',amount:15000000,pic:'Sari',note:''},
-{client:'PT Citra Karya',date:'2026-08-28',event:'HUT Perusahaan',amount:5000000,pic:'Andi',note:''},
-{client:'PT Sejahtera Abadi',date:'2026-08-26',event:'Festival Budaya',amount:10000000,pic:'Rina',note:''},
-{client:'PT Maju Bersama',date:'2026-07-12',event:'Event ABC',amount:10000000,pic:'Sari',note:''},
-{client:'PT Global Media',date:'2026-06-04',event:'Gathering',amount:5000000,pic:'Budi',note:''}
-];
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function rupiah(n){return 'Rp '+Number(n||0).toLocaleString('id-ID')}
-function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function fmtDate(d){return new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
-function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));render()}
-function render(){
-const clients=[...new Set(data.map(x=>x.client))],total=data.reduce((a,x)=>a+Number(x.amount),0);
-statClients.textContent=clients.length;statRequests.textContent=data.length;statTotal.textContent=rupiah(total);
-const ym=new Date().toISOString().slice(0,7);statMonth.textContent=rupiah(data.filter(x=>x.date.startsWith(ym)).reduce((a,x)=>a+Number(x.amount),0));
-const sorted=[...data].sort((a,b)=>b.date.localeCompare(a.date));
-recent.innerHTML='<table class="table"><tr><th>Tanggal</th><th>Nasabah</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th></tr>'+sorted.slice(0,6).map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.client)}</td><td>${esc(x.event)}</td><td>${rupiah(x.amount)}</td><td>${esc(x.pic)}</td></tr>`).join('')+'</table>';
-const sums={};data.forEach(x=>sums[x.client]=(sums[x.client]||0)+Number(x.amount));const tops=Object.entries(sums).sort((a,b)=>b[1]-a[1]).slice(0,5);
-topClients.innerHTML=tops.map((x,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span>${i+1}. ${esc(x[0])}</span><b>${rupiah(x[1])}</b></div>`).join('')||'<span class="muted">Belum ada data.</span>';
-const months=Array.from({length:6},(_,i)=>{let d=new Date();d.setMonth(d.getMonth()-5+i);return d.toISOString().slice(0,7)}),vals=months.map(m=>data.filter(x=>x.date.startsWith(m)).reduce((a,x)=>a+Number(x.amount),0)),max=Math.max(...vals,1);
-bars.innerHTML=vals.map((v,i)=>`<div class="bar ${i===5?'current':''}" style="height:${Math.max(12,v/max*150)}px"><span>${months[i].slice(5)}</span></div>`).join('');
-summary.innerHTML=`<div style="padding:10px 0;border-bottom:1px solid var(--line)">Rata-rata per sponsorship <b style="float:right">${rupiah(data.length?total/data.length:0)}</b></div><div style="padding:10px 0;border-bottom:1px solid var(--line)">Nasabah unik <b style="float:right">${clients.length}</b></div><div style="padding:10px 0">Total transaksi <b style="float:right">${data.length}</b></div>`;
-renderClients();renderReport()
+const SUPABASE_URL="https://txmxctzuhckexbkgbchy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_oyyBZwodIFqtT5mUcvegnA_i5tKrxxO";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+let rows=[],profile=null,reportRows=[];
+
+const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
+async function login(){
+  const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value,msg=document.getElementById('loginMsg');
+  msg.innerHTML='';
+  if(!u||!p){msg.innerHTML='<div class="notice">Username dan password wajib diisi.</div>';return}
+  const {data,emailError}=await getEmail(u);
+  if(emailError||!data){msg.innerHTML='<div class="notice">Username tidak ditemukan.</div>';return}
+  const {error}=await db.auth.signInWithPassword({email:data,password:p});
+  if(error){msg.innerHTML='<div class="notice">Login gagal. Cek username/password.</div>';return}
+  await start();
 }
-function renderClients(){const q=(clientSearch.value||'').toLowerCase(),clients=[...new Set(data.map(x=>x.client))].filter(c=>c.toLowerCase().includes(q)),sums={};data.forEach(x=>sums[x.client]=(sums[x.client]||0)+Number(x.amount));clientList.innerHTML=clients.map(c=>`<div class="card client" onclick='profile(${JSON.stringify(c)})'><strong>${esc(c)}</strong><small>${data.filter(x=>x.client===c).length} sponsorship · ${rupiah(sums[c])}</small></div>`).join('')||'<div class="muted">Nasabah belum ditemukan.</div>'}
-function profile(c){profileName.textContent=c;const rows=data.filter(x=>x.client===c).sort((a,b)=>b.date.localeCompare(a.date)),total=rows.reduce((a,x)=>a+Number(x.amount),0);profileContent.innerHTML=`<div class="profile"><div class="card"><div class="muted">TOTAL SPONSORSHIP</div><div class="big">${rupiah(total)}</div><div class="muted">${rows.length} kali sponsorship</div></div><div class="card"><h3>History</h3><table class="table"><tr><th>Tanggal</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th></tr>${rows.map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.event)}</td><td>${rupiah(x.amount)}</td><td>${esc(x.pic)}</td></tr>`).join('')}</table></div></div>`;showPage('profile')}
-function newNasabah(){showPage('sponsorship');fClient.focus()}
-function renderReport(){const q=(rSearch.value||'').toLowerCase(),rows=data.filter(x=>[x.client,x.pic,x.event].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));reportTable.innerHTML='<table class="table"><tr><th>Tanggal</th><th>Nasabah</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th></tr>'+rows.map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.client)}</td><td>${esc(x.event)}</td><td>${rupiah(x.amount)}</td><td>${esc(x.pic)}</td></tr>`).join('')+'</table>'}
-function exportCSV(){const rows=[['Tanggal','Nasabah','Kegiatan','Nominal','PIC','Catatan'],...data.map(x=>[x.date,x.client,x.event,x.amount,x.pic,x.note])],csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\\n'),blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='TBSVI8_Sponsorship_Report.csv';a.click();URL.revokeObjectURL(a.href)}
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
-clientSearch.addEventListener('input',renderClients);rSearch.addEventListener('input',renderReport);
-globalSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.toLowerCase(),found=data.find(x=>[x.client,x.event,x.pic].join(' ').toLowerCase().includes(q));found?profile(found.client):showPage('nasabah')}});
-sponsorForm.addEventListener('submit',e=>{e.preventDefault();data.push({client:fClient.value.trim(),date:fDate.value,event:fEvent.value.trim(),amount:Number(fAmount.value),pic:fPic.value.trim(),note:fNote.value.trim()});save();e.target.reset();fDate.value=new Date().toISOString().slice(0,10);showPage('dashboard');alert('Sponsorship berhasil disimpan.')});
-today.textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});fDate.value=new Date().toISOString().slice(0,10);render();
+async function getEmail(username){
+  const res=await db.rpc('get_login_email',{p_username:username});
+  return {data:res.data,error:res.error};
+}
+async function start(){
+  const {data:{user}}=await db.auth.getUser();if(!user)return;
+  const p=await db.from('profiles').select('*').eq('id',user.id).single();
+  profile=p.data||{nama:user.email,username:user.email};
+  document.getElementById('userInfo').textContent=profile.nama+' (@'+profile.username+')';
+  document.getElementById('loginView').classList.add('hidden');document.getElementById('appView').classList.remove('hidden');
+  document.getElementById('fTanggal').value=new Date().toISOString().slice(0,10);
+  await load();
+}
+async function logout(){await db.auth.signOut();location.reload()}
+async function load(){
+  const res=await db.from('sponsorship').select('id,nasabah_id,tanggal,kegiatan,nominal,pic,catatan,input_by,nasabah(nama)').order('tanggal',{ascending:false});
+  if(res.error){alert(res.error.message);return}
+  rows=res.data||[];
+  const names=new Set(rows.map(r=>r.nasabah?.nama).filter(Boolean));
+  document.getElementById('totalNasabah').textContent=names.size;
+  document.getElementById('totalSponsorship').textContent=rows.length;
+  document.getElementById('totalNominal').textContent=rupiah(rows.reduce((a,r)=>a+Number(r.nominal||0),0));
+  const ym=new Date().toISOString().slice(0,7);
+  document.getElementById('bulanIni').textContent=rupiah(rows.filter(r=>String(r.tanggal).slice(0,7)===ym).reduce((a,r)=>a+Number(r.nominal||0),0));
+  const sums={};rows.forEach(r=>{const n=r.nasabah?.nama||'';sums[n]=(sums[n]||0)+Number(r.nominal||0)});
+  const top=Object.entries(sums).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  document.getElementById('topList').innerHTML=top.length?'<table><tr><th>Nasabah</th><th>Total</th></tr>'+top.map(x=>'<tr><td>'+esc(x[0])+'</td><td>'+rupiah(x[1])+'</td></tr>').join('')+'</table>':'<p class="muted">Belum ada data.</p>';
+}
+function page(id,btn){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('pageTitle').textContent=btn.textContent;
+}
+function searchNasabah(){
+  const q=document.getElementById('searchNasabah').value.trim().toLowerCase();
+  const names=[...new Set(rows.map(r=>r.nasabah?.nama).filter(Boolean))].filter(n=>n.toLowerCase().includes(q)).slice(0,30);
+  document.getElementById('nasabahResults').innerHTML=names.length?'<div class="card">'+names.map(n=>'<button class="secondary" style="margin:4px" onclick=\'detailNasabah('+JSON.stringify(n)+')\'>'+esc(n)+'</button>').join('')+'</div>':'';
+}
+function detailNasabah(name){
+  const rs=rows.filter(r=>r.nasabah?.nama===name),total=rs.reduce((a,r)=>a+Number(r.nominal||0),0);
+  document.getElementById('nasabahDetail').innerHTML='<div class="card"><h2>'+esc(name)+'</h2><p><b>Total sponsorship:</b> '+rupiah(total)+' &nbsp; <b>Jumlah:</b> '+rs.length+'</p><table><tr><th>Tanggal</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th><th>Catatan</th></tr>'+rs.map(r=>'<tr><td>'+esc(r.tanggal)+'</td><td>'+esc(r.kegiatan)+'</td><td>'+rupiah(r.nominal)+'</td><td>'+esc(r.pic)+'</td><td>'+esc(r.catatan)+'</td></tr>').join('')+'</table></div>';
+}
+async function saveData(){
+  const msg=document.getElementById('inputMsg');msg.innerHTML='';
+  const name=f('fNasabah'),tanggal=f('fTanggal'),kegiatan=f('fKegiatan'),nominal=Number(f('fNominal')),pic=f('fPic'),catatan=f('fCatatan');
+  if(!name||!tanggal||!kegiatan||!pic||Number.isNaN(nominal)){msg.innerHTML='<div class="notice">Lengkapi Nasabah, Tanggal, Kegiatan, Nominal, dan PIC.</div>';return}
+  let n=(await db.from('nasabah').select('id').eq('nama',name).maybeSingle()).data;
+  if(!n){const ins=await db.from('nasabah').insert({nama:name}).select('id').single();if(ins.error){msg.innerHTML='<div class="notice">'+esc(ins.error.message)+'</div>';return}n=ins.data}
+  const {data:{user}}=await db.auth.getUser();
+  const ins=await db.from('sponsorship').insert({nasabah_id:n.id,tanggal,kegiatan,nominal,pic,catatan:catatan||null,input_by:user.id});
+  if(ins.error){msg.innerHTML='<div class="notice">'+esc(ins.error.message)+'</div>';return}
+  msg.innerHTML='<div class="notice ok">Sponsorship berhasil disimpan.</div>';
+  ['fNasabah','fKegiatan','fNominal','fPic','fCatatan'].forEach(id=>document.getElementById(id).value='');await load();
+}
+function f(id){return document.getElementById(id).value.trim()}
+function filtered(){
+  const from=f('rFrom'),to=f('rTo'),n=f('rNasabah').toLowerCase(),p=f('rPic').toLowerCase();
+  return rows.filter(r=>(!from||r.tanggal>=from)&&(!to||r.tanggal<=to)&&(!n||(r.nasabah?.nama||'').toLowerCase().includes(n))&&(!p||(r.pic||'').toLowerCase().includes(p)));
+}
+function runReport(){
+  reportRows=filtered();document.getElementById('reportTable').innerHTML=reportRows.length?'<table><tr><th>Tanggal</th><th>Nasabah</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th><th>Catatan</th></tr>'+reportRows.map(r=>'<tr><td>'+esc(r.tanggal)+'</td><td>'+esc(r.nasabah?.nama)+'</td><td>'+esc(r.kegiatan)+'</td><td>'+rupiah(r.nominal)+'</td><td>'+esc(r.pic)+'</td><td>'+esc(r.catatan)+'</td></tr>').join('')+'</table>':'<p class="muted">Tidak ada data.</p>';
+}
+function exportCSV(){
+  reportRows=filtered();if(!reportRows.length){alert('Tidak ada data untuk diexport.');return}
+  const h=['Tanggal','Nasabah','Kegiatan','Nominal','PIC','Catatan','Input By'];
+  const data=reportRows.map(r=>[r.tanggal,r.nasabah?.nama,r.kegiatan,r.nominal,r.pic,r.catatan||'',profile?.username||'']);
+  const csv=[h,...data].map(a=>a.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='sponsorship-report.csv';a.click();
+}
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session)await start()})();
 </script>
 </body>
 </html>
