@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TBSVI8 Sponsorship Tracker V2</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--nav:#172235;--blue:#2563eb;--bg:#f5f7fb;--card:#fff;--text:#182338;--muted:#718096;--line:#e6eaf0;--danger:#b42318;--ok:#067647}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{width:220px;background:var(--nav);color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0;display:flex;flex-direction:column}.brand{font-weight:800;letter-spacing:1px;font-size:15px;padding:4px 12px 28px}.brand span{display:block;font-size:10px;letter-spacing:2px;opacity:.65;margin-top:4px}.nav button{width:100%;background:none;border:0;color:#d9e0ea;text-align:left;padding:13px 14px;border-radius:9px;margin:3px 0;font-size:14px;cursor:pointer}.nav button.active,.nav button:hover{background:#2457a7;color:#fff}.user{margin-top:auto;font-size:12px;color:#d9e0ea;padding:10px 4px}
+.main{margin-left:220px;width:calc(100% - 220px);padding:28px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.title h1{margin:0;font-size:25px}.title p{margin:5px 0;color:var(--muted)}
+.page{display:none}.page.active{display:block}.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:0 2px 8px #00000008;margin-bottom:18px}.metric .label{font-size:13px;color:var(--muted)}.metric .value{font-size:22px;font-weight:800;margin-top:8px}.metric small{display:block;color:var(--muted);margin-top:5px;font-size:11px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.card h2{margin:0 0 14px;font-size:18px}.notice{padding:11px 13px;border-radius:8px;background:#fff4e5;margin:10px 0;font-size:13px}.ok{background:#ecfdf3;color:var(--ok)}.err{background:#fef3f2;color:var(--danger)}
+button{border:0;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f7;color:#27364d}.danger{background:#fee4e2;color:var(--danger)}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}input,textarea,select{width:100%;padding:10px 11px;border:1px solid #ccd3df;border-radius:8px;font:inherit;background:#fff;color:var(--text)}textarea{min-height:80px}
+table{width:100%;border-collapse:collapse}th,td{padding:11px 9px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}th{background:#f8fafc}.muted{color:var(--muted)}.search{display:flex;gap:10px}.search input{flex:1}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.login .box{width:420px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px}.login h1{margin:0 0 6px}.hidden{display:none!important}
+.source-row{display:grid;grid-template-columns:1fr 180px 40px;gap:8px;margin-bottom:9px}.source-row button{background:#fee4e2;color:var(--danger);padding:8px}
+.totalbox{display:flex;justify-content:space-between;background:#f1f6ff;border:1px solid #cfe0ff;border-radius:9px;padding:14px;margin-top:12px;font-weight:800}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.pill{display:inline-block;padding:4px 8px;background:#eef2f7;border-radius:99px;font-size:11px;margin:2px}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:800px){.side{width:180px}.main{margin-left:180px;width:calc(100% - 180px)}.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.side{position:static;width:100%;min-height:auto}.app{display:block}.main{margin:0;width:100%;padding:18px}.grid,.formgrid{grid-template-columns:1fr}.user{margin-top:20px}.search{flex-direction:column}}
+</style>
+</head>
+<body>
+<div id="loginView" class="login">
+  <div class="box">
+    <h1>TBSVI8 Sponsorship Tracker V2</h1>
+    <p class="muted">Login dengan username dan password.</p>
+    <div id="loginMsg"></div>
+    <label>Username</label><input id="username" autocomplete="username" placeholder="Username">
+    <br><br><label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password">
+    <br><br><button class="primary" style="width:100%" onclick="login()">Login</button>
+  </div>
+</div>
+
+<div id="appView" class="app hidden">
+<aside class="side">
+  <div class="brand">TBSVI8<span>SPONSORSHIP TRACKER V2</span></div>
+  <div class="nav">
+    <button class="active" onclick="page('dashboard',this)">Dashboard</button>
+    <button onclick="page('nasabah',this)">Nasabah</button>
+    <button onclick="page('input',this)">Input Sponsorship</button>
+    <button onclick="page('report',this)">Report</button>
+  </div>
+  <div class="user" id="userInfo"></div>
+</aside>
+
+<main class="main">
+<div class="top"><div class="title"><h1 id="pageTitle">Dashboard</h1><p>Data sponsorship bersama</p></div><button class="secondary" onclick="logout()">Logout</button></div>
+
+<section id="dashboard" class="page active">
+  <div class="grid">
+    <div class="card metric"><div class="label">Total Nasabah</div><div class="value" id="totalNasabah">0</div></div>
+    <div class="card metric"><div class="label">Total Sponsorship</div><div class="value" id="totalSponsorship">0</div></div>
+    <div class="card metric"><div class="label">Total Nominal</div><div class="value" id="totalNominal">Rp 0</div></div>
+    <div class="card metric"><div class="label">Bulan Ini</div><div class="value" id="bulanIni">Rp 0</div></div>
+    <div class="card metric"><div class="label">Total Dana Sponsorship Tahun Berjalan</div><div class="value" id="tahunBerjalan">Rp 0</div><small>Total dana yang sudah dikeluarkan untuk sponsorship</small></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h2>Sponsorship Terbesar</h2><p class="muted">Top 10 sponsorship berdasarkan nominal.</p><div id="topSponsorship"></div></div>
+    <div class="card"><h2>Sumber Dana Sponsorship</h2><p class="muted">Total dana sponsorship berdasarkan sumber dana.</p><div id="fundSources"></div></div>
+  </div>
+  <div class="card"><h2>Sponsorship Terbaru</h2><div id="recent"></div></div>
+</section>
+
+<section id="nasabah" class="page">
+  <div class="card"><h2>Cari Nasabah</h2><div class="search"><input id="searchNasabah" placeholder="Ketik nama nasabah atau group..." oninput="searchNasabah()"><button class="primary" onclick="searchNasabah()">Cari</button></div></div>
+  <div id="nasabahResults"></div><div id="nasabahDetail"></div>
+</section>
+
+<section id="input" class="page">
+  <div class="card"><h2>Input Sponsorship</h2><div id="inputMsg"></div>
+    <div class="formgrid">
+      <div><label>Nasabah *</label><input id="fNasabah" placeholder="Nama nasabah"></div>
+      <div><label>Group Nasabah</label><input id="fGroup" placeholder="Group nasabah"></div>
+      <div><label>Tanggal *</label><input id="fTanggal" type="date"></div>
+      <div><label>Kegiatan *</label><input id="fKegiatan" placeholder="Nama kegiatan"></div>
+      <div><label>PIC *</label><input id="fPic" placeholder="Nama PIC"></div>
+      <div><label>Catatan (opsional)</label><input id="fCatatan" placeholder="Catatan"></div>
+    </div>
+    <div class="card" style="margin-top:18px;margin-bottom:0;padding:16px;background:#fbfcfe">
+      <h2 style="font-size:16px">Sumber Dana</h2>
+      <p class="muted">Satu sponsorship dapat menggunakan lebih dari satu sumber dana.</p>
+      <div id="sourceRows"></div>
+      <button class="secondary" type="button" onclick="addSource()">+ Tambah Sumber Dana</button>
+      <div class="totalbox"><span>Total Sponsorship</span><span id="sourceTotal">Rp 0</span></div>
+    </div>
+    <div class="actions"><button class="secondary" onclick="page('dashboard',document.querySelector('.nav button'))">Batal</button><button class="primary" onclick="saveData()">Simpan Sponsorship</button></div>
+  </div>
+</section>
+
+<section id="report" class="page">
+  <div class="card"><h2>Report</h2>
+    <div class="formgrid">
+      <div><label>Dari tanggal</label><input id="rFrom" type="date"></div>
+      <div><label>Sampai tanggal</label><input id="rTo" type="date"></div>
+      <div><label>Nasabah</label><input id="rNasabah" placeholder="Opsional"></div>
+      <div><label>PIC</label><input id="rPic" placeholder="Opsional"></div>
+      <div><label>Sumber Dana</label><select id="rSource"><option value="">Semua</option><option>TBSVI8</option><option>TBWG</option><option>BU</option><option>Region</option><option>Area</option><option>Cabang</option><option>Lainnya</option></select></div>
+    </div><br>
+    <button class="primary" onclick="runReport()">Tampilkan</button>
+    <button class="secondary" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div class="card"><div id="reportTable"></div></div>
+</section>
+</main>
+</div>
+
+<script>
+const SUPABASE_URL="https://txmxctzuhckexbkgbchy.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_oyyBZwodIFqtT5mUcvegnA_i5tKrxxO";
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const SOURCES=['TBSVI8','TBWG','BU','Region','Area','Cabang','Lainnya'];
+let rows=[],fundRows=[],profile=null,reportRows=[];
+const rupiah=n=>new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(Number(n)||0);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
+async function login(){
+ const u=username.value.trim(),p=password.value,msg=loginMsg;msg.innerHTML='';
+ if(!u||!p){msg.innerHTML='<div class="notice">Username dan password wajib diisi.</div>';return}
+ const res=await db.rpc('get_login_email',{p_username:u});
+ if(res.error||!res.data){msg.innerHTML='<div class="notice">Username tidak ditemukan.</div>';return}
+ const {error}=await db.auth.signInWithPassword({email:res.data,password:p});
+ if(error){msg.innerHTML='<div class="notice">Login gagal. Cek username/password.</div>';return}
+ await start();
+}
+async function start(){
+ const {data:{user}}=await db.auth.getUser();if(!user)return;
+ const p=await db.from('profiles').select('*').eq('id',user.id).single();
+ profile=p.data||{nama:user.email,username:user.email};
+ userInfo.textContent=profile.nama+' (@'+profile.username+')';
+ loginView.classList.add('hidden');appView.classList.remove('hidden');
+ fTanggal.value=new Date().toISOString().slice(0,10);
+ if(!sourceRows.children.length)addSource();
+ await load();
+}
+async function logout(){await db.auth.signOut();location.reload()}
+async function load(){
+ const s=await db.from('sponsorship').select('id,nasabah_id,tanggal,kegiatan,nominal,pic,catatan,input_by,nasabah(id,nama,group_nasabah)').order('tanggal',{ascending:false});
+ if(s.error){alert(s.error.message);return}
+ rows=s.data||[];
+ const f=await db.from('sponsorship_sumber_dana').select('sponsorship_id,sumber_dana,nominal');
+ if(f.error){alert(f.error.message);return}
+ fundRows=f.data||[];
+ const names=new Set(rows.map(r=>r.nasabah?.nama).filter(Boolean));
+ totalNasabah.textContent=names.size;totalSponsorship.textContent=rows.length;
+ totalNominal.textContent=rupiah(rows.reduce((a,r)=>a+Number(r.nominal||0),0));
+ const ym=new Date().toISOString().slice(0,7),yy=new Date().getFullYear().toString();
+ bulanIni.textContent=rupiah(rows.filter(r=>String(r.tanggal).slice(0,7)===ym).reduce((a,r)=>a+Number(r.nominal||0),0));
+ tahunBerjalan.textContent=rupiah(rows.filter(r=>String(r.tanggal).startsWith(yy)).reduce((a,r)=>a+Number(r.nominal||0),0));
+ const top=[...rows].sort((a,b)=>Number(b.nominal)-Number(a.nominal)).slice(0,10);
+ topSponsorship.innerHTML=top.length?'<table><tr><th>#</th><th>Nasabah</th><th>Group</th><th>Kegiatan</th><th>Nominal</th></tr>'+top.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.nasabah?.nama)}</td><td>${esc(r.nasabah?.group_nasabah||'-')}</td><td>${esc(r.kegiatan)}</td><td><b>${rupiah(r.nominal)}</b></td></tr>`).join('')+'</table>':'<p class="muted">Belum ada data.</p>';
+ const sums={};fundRows.forEach(r=>sums[r.sumber_dana]=(sums[r.sumber_dana]||0)+Number(r.nominal||0));
+ fundSources.innerHTML='<table><tr><th>Sumber Dana</th><th>Total Dana</th></tr>'+SOURCES.map(s=>`<tr><td>${s}</td><td><b>${rupiah(sums[s]||0)}</b></td></tr>`).join('')+'</table>';
+ recent.innerHTML=rows.slice(0,10).length?'<table><tr><th>Tanggal</th><th>Nasabah</th><th>Group</th><th>Kegiatan</th><th>Total</th><th>Sumber Dana</th></tr>'+rows.slice(0,10).map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.nasabah?.nama)}</td><td>${esc(r.nasabah?.group_nasabah||'-')}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>`<span class="pill">${f.sumber_dana}</span>`).join('')}</td></tr>`).join('')+'</table>':'<p class="muted">Belum ada data.</p>';
+}
+function page(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');pageTitle.textContent=btn?btn.textContent:id==='input'?'Input Sponsorship':id[0].toUpperCase()+id.slice(1)}
+function addSource(){
+ const d=document.createElement('div');d.className='source-row';
+ d.innerHTML=`<select>${SOURCES.map(s=>`<option>${s}</option>`).join('')}</select><input type="number" min="1" step="1000" placeholder="Nominal" oninput="calcTotal()"><button type="button" onclick="this.parentElement.remove();calcTotal()">×</button>`;
+ sourceRows.appendChild(d);calcTotal();
+}
+function calcTotal(){sourceTotal.textContent=rupiah([...sourceRows.querySelectorAll('input')].reduce((a,x)=>a+(Number(x.value)||0),0))}
+async function saveData(){
+ inputMsg.innerHTML='';
+ const name=fNasabah.value.trim(),group=fGroup.value.trim(),tanggal=fTanggal.value,kegiatan=fKegiatan.value.trim(),pic=fPic.value.trim(),catatan=fCatatan.value.trim();
+ const src=[...sourceRows.children].map(r=>({sumber_dana:r.children[0].value,nominal:Number(r.children[1].value)||0})).filter(x=>x.nominal>0);
+ const total=src.reduce((a,x)=>a+x.nominal,0);
+ if(!name||!tanggal||!kegiatan||!pic||!src.length){inputMsg.innerHTML='<div class="notice">Lengkapi Nasabah, Tanggal, Kegiatan, PIC, dan minimal satu sumber dana.</div>';return}
+ if(src.length!==new Set(src.map(x=>x.sumber_dana)).size){inputMsg.innerHTML='<div class="notice">Sumber dana tidak boleh duplikat dalam satu sponsorship.</div>';return}
+ const nres=await db.from('nasabah').select('id').eq('nama',name).maybeSingle();let n=nres.data;
+ if(nres.error){inputMsg.innerHTML='<div class="notice err">'+esc(nres.error.message)+'</div>';return}
+ if(!n){const ins=await db.from('nasabah').insert({nama:name,group_nasabah:group||null}).select('id').single();if(ins.error){inputMsg.innerHTML='<div class="notice err">'+esc(ins.error.message)+'</div>';return}n=ins.data}
+ const {data:{user}}=await db.auth.getUser();
+ const call=await db.rpc('create_sponsorship_with_funding',{p_nasabah_id:n.id,p_tanggal:tanggal,p_kegiatan:kegiatan,p_pic:pic,p_catatan:catatan||null,p_input_by:user.id,p_group_nasabah:group||null,p_sources:src});
+ if(call.error){inputMsg.innerHTML='<div class="notice err">'+esc(call.error.message)+'</div>';return}
+ inputMsg.innerHTML='<div class="notice ok">Sponsorship berhasil disimpan.</div>';
+ ['fNasabah','fGroup','fKegiatan','fPic','fCatatan'].forEach(id=>document.getElementById(id).value='');
+ sourceRows.innerHTML='';addSource();await load();
+}
+function searchNasabah(){
+ const q=searchNasabahEl().value.trim().toLowerCase();
+ const ns=[...new Map(rows.map(r=>[r.nasabah?.id,r.nasabah])).values()].filter(n=>(n?.nama||'').toLowerCase().includes(q)||(n?.group_nasabah||'').toLowerCase().includes(q)).slice(0,30);
+ nasabahResults.innerHTML=ns.length?'<div class="card">'+ns.map(n=>`<button class="secondary" style="margin:4px" onclick="detailNasabah(${n.id})">${esc(n.nama)} <span class="muted">(${esc(n.group_nasabah||'-')})</span></button>`).join('')+'</div>':'<p class="muted">Nasabah tidak ditemukan.</p>';
+}
+function searchNasabahEl(){return document.getElementById('searchNasabah')}
+function detailNasabah(id){
+ const n=rows.find(r=>r.nasabah?.id===id)?.nasabah,rs=rows.filter(r=>r.nasabah?.id===id),total=rs.reduce((a,r)=>a+Number(r.nominal||0),0);
+ nasabahDetail.innerHTML=`<div class="card"><h2>${esc(n?.nama)}</h2><p><b>Group:</b> ${esc(n?.group_nasabah||'-')} &nbsp; <b>Total sponsorship:</b> ${rupiah(total)} &nbsp; <b>Jumlah:</b> ${rs.length}</p><table><tr><th>Tanggal</th><th>Kegiatan</th><th>Nominal</th><th>Sumber Dana</th><th>PIC</th><th>Catatan</th></tr>${rs.map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>f.sumber_dana+' '+rupiah(f.nominal)).join('<br>')}</td><td>${esc(r.pic)}</td><td>${esc(r.catatan)}</td></tr>`).join('')}</table></div>`;
+}
+function filtered(){
+ const from=rFrom.value,to=rTo.value,n=rNasabah.value.trim().toLowerCase(),p=rPic.value.trim().toLowerCase(),s=rSource.value;
+ return rows.filter(r=>(!from||r.tanggal>=from)&&(!to||r.tanggal<=to)&&(!n||(r.nasabah?.nama||'').toLowerCase().includes(n))&&(!p||(r.pic||'').toLowerCase().includes(p))&&(!s||fundRows.some(f=>f.sponsorship_id===r.id&&f.sumber_dana===s)));
+}
+function runReport(){
+ reportRows=filtered();reportTable.innerHTML=reportRows.length?'<table><tr><th>Tanggal</th><th>Nasabah</th><th>Group</th><th>Kegiatan</th><th>Total</th><th>Sumber Dana</th><th>PIC</th></tr>'+reportRows.map(r=>`<tr><td>${esc(r.tanggal)}</td><td>${esc(r.nasabah?.nama)}</td><td>${esc(r.nasabah?.group_nasabah||'-')}</td><td>${esc(r.kegiatan)}</td><td>${rupiah(r.nominal)}</td><td>${fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>`${f.sumber_dana}: ${rupiah(f.nominal)}`).join('<br>')}</td><td>${esc(r.pic)}</td></tr>`).join('')+'</table>':'<p class="muted">Tidak ada data.</p>';
+}
+function exportCSV(){
+ reportRows=filtered();if(!reportRows.length){alert('Tidak ada data untuk diexport.');return}
+ const h=['Tanggal','Nasabah','Group','Kegiatan','Nominal','Sumber Dana','PIC','Catatan','Input By'];
+ const data=reportRows.map(r=>[r.tanggal,r.nasabah?.nama,r.nasabah?.group_nasabah||'',r.kegiatan,r.nominal,fundRows.filter(f=>f.sponsorship_id===r.id).map(f=>f.sumber_dana+': '+f.nominal).join(' | '),r.pic,r.catatan||'',profile?.username||'']);
+ const csv=[h,...data].map(a=>a.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='TBSVI8-sponsorship-report.csv';a.click();
+}
+(async()=>{const {data:{session}}=await db.auth.getSession();if(session)await start()})();
+</script>
+</body>
+</html>
