@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TBSVI8 Sponsorship Tracker V1</title>
+<style>
+:root{--nav:#172235;--blue:#2563eb;--bg:#f5f7fb;--card:#fff;--text:#182338;--muted:#718096;--line:#e6eaf0}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{width:220px;background:var(--nav);color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0}.brand{font-weight:800;letter-spacing:1px;font-size:15px;padding:4px 12px 28px}.brand span{display:block;font-size:10px;letter-spacing:2px;opacity:.65;margin-top:4px}
+.nav button{width:100%;background:none;border:0;color:#d9e0ea;text-align:left;padding:13px 14px;border-radius:9px;margin:3px 0;font-size:14px;cursor:pointer}.nav button.active,.nav button:hover{background:#2457a7;color:#fff}.user{position:absolute;bottom:20px;left:14px;right:14px;border-top:1px solid #314057;padding:18px 10px 0;font-size:13px}.user small{color:#91a0b6}
+.main{margin-left:220px;width:calc(100% - 220px);padding:22px 28px}.top{display:flex;gap:14px;align-items:center;margin-bottom:24px}.search{flex:1;max-width:560px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px 15px;font-size:14px}.date{margin-left:auto;color:var(--muted);font-size:13px}
+.page{display:none}.page.active{display:block}.title{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.title h1{margin:0;font-size:27px}.title p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.primary{background:var(--blue);color:#fff;border:0;border-radius:9px;padding:12px 16px;font-weight:700;cursor:pointer}.secondary{background:#fff;border:1px solid var(--line);padding:11px 16px;border-radius:8px;cursor:pointer}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.stat,.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}.stat .label{color:var(--muted);font-size:12px}.stat .value{font-size:24px;font-weight:800;margin-top:8px}.layout2{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-top:14px}.layout2b{display:grid;grid-template-columns:1.5fr 1fr;gap:14px;margin-top:14px}.card h3{margin:0 0 15px;font-size:15px}
+.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line)}.table th{color:var(--muted);font-weight:600}
+.barwrap{display:flex;align-items:end;gap:10px;height:180px;padding:12px 4px 0}.bar{flex:1;background:#8eb8f5;border-radius:5px 5px 0 0;min-height:12px;position:relative}.bar.current{background:#2563eb}.bar span{position:absolute;bottom:-23px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted)}
+.form{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;font-weight:700}.field input,.field textarea{border:1px solid var(--line);border-radius:8px;padding:11px;font:inherit;background:#fff}.field textarea{min-height:90px;resize:vertical}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+.client-search{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px}.client-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.client{cursor:pointer}.client:hover{border-color:#9bbcf3}.client strong{display:block}.client small{color:var(--muted)}
+.profile{display:grid;grid-template-columns:1fr 2fr;gap:14px}.big{font-size:30px;font-weight:800;margin:8px 0}.muted{color:var(--muted);font-size:12px}.report-controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.report-controls input{padding:10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.notice{background:#eef5ff;border:1px solid #cfe0ff;padding:12px;border-radius:9px;font-size:12px;color:#315b9d;margin-bottom:14px}
+@media(max-width:900px){.side{width:72px}.brand{font-size:0}.brand:before{content:"T8";font-size:18px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:18px}.user{font-size:0}.main{margin-left:72px;width:calc(100% - 72px);padding:16px}.grid4{grid-template-columns:repeat(2,1fr)}.layout2,.layout2b,.profile{grid-template-columns:1fr}.client-list{grid-template-columns:1fr}.top .date{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+<div class="brand">TBSVI8<span>SPONSORSHIP TRACKER V1</span></div>
+<nav class="nav">
+<button class="active" data-page="dashboard">⌂ &nbsp; Dashboard</button>
+<button data-page="nasabah">♙ &nbsp; Nasabah</button>
+<button data-page="sponsorship">▣ &nbsp; Sponsorship</button>
+<button data-page="report">▥ &nbsp; Report</button>
+</nav>
+<div class="user"><b id="currentUser">Titah</b><br><small>Shared access</small></div>
+</aside>
+
+<main class="main">
+<div class="top"><input id="globalSearch" class="search" placeholder="Cari nasabah, kegiatan, atau PIC..."><div class="date" id="today"></div></div>
+
+<section id="dashboard" class="page active">
+<div class="title"><div><h1>Dashboard</h1><p>Ringkasan sponsorship yang sudah dibayarkan.</p></div><button class="primary" onclick="showPage('sponsorship')">＋ Input Sponsorship</button></div>
+<div class="grid4">
+<div class="stat"><div class="label">Total Nasabah</div><div class="value" id="statClients">0</div></div>
+<div class="stat"><div class="label">Total Sponsorship</div><div class="value" id="statRequests">0</div></div>
+<div class="stat"><div class="label">Total Nominal</div><div class="value" id="statTotal">Rp 0</div></div>
+<div class="stat"><div class="label">Bulan Ini</div><div class="value" id="statMonth">Rp 0</div></div>
+</div>
+<div class="layout2"><div class="card"><h3>Sponsorship Terbaru</h3><div id="recent"></div></div><div class="card"><h3>Nasabah Terbesar</h3><div id="topClients"></div></div></div>
+<div class="layout2b"><div class="card"><h3>Sponsorship per Bulan</h3><div class="barwrap" id="bars"></div></div><div class="card"><h3>Ringkasan</h3><div id="summary"></div></div></div>
+</section>
+
+<section id="nasabah" class="page">
+<div class="title"><div><h1>Nasabah</h1><p>Cari nasabah dan lihat seluruh histori sponsorship.</p></div><button class="primary" onclick="newNasabah()">＋ Tambah Sponsorship</button></div>
+<div class="card"><input id="clientSearch" class="client-search" placeholder="Cari nama nasabah..."><div id="clientList" class="client-list"></div></div>
+</section>
+
+<section id="sponsorship" class="page">
+<div class="title"><div><h1>Input Sponsorship</h1><p>Setiap data yang disimpan dianggap sudah dibayarkan.</p></div></div>
+<div class="notice">Tidak ada status. Data yang masuk ke sistem = sponsorship sudah dibayarkan.</div>
+<div class="card"><form id="sponsorForm"><div class="form">
+<div class="field"><label>Nasabah</label><input id="fClient" required placeholder="Contoh: PT Maju Bersama"></div>
+<div class="field"><label>Tanggal</label><input id="fDate" type="date" required></div>
+<div class="field"><label>Kegiatan</label><input id="fEvent" required placeholder="Nama kegiatan"></div>
+<div class="field"><label>Nominal</label><input id="fAmount" type="number" min="0" required placeholder="10000000"></div>
+<div class="field"><label>PIC</label><input id="fPic" required placeholder="Nama PIC"></div>
+<div class="field full"><label>Catatan</label><textarea id="fNote" placeholder="Catatan tambahan (opsional)"></textarea></div>
+</div><div class="actions"><button type="button" class="secondary" onclick="showPage('dashboard')">Batal</button><button class="primary">Simpan Sponsorship</button></div></form></div>
+</section>
+
+<section id="report" class="page">
+<div class="title"><div><h1>Report</h1><p>Rekap sponsorship berdasarkan data yang sudah dibayarkan.</p></div><button class="primary" onclick="exportCSV()">Export CSV</button></div>
+<div class="card"><div class="report-controls"><input id="rSearch" placeholder="Cari nasabah / PIC / kegiatan..."></div><div id="reportTable"></div></div>
+</section>
+
+<section id="profile" class="page">
+<div class="title"><div><h1 id="profileName">Nasabah</h1><p>Detail histori sponsorship.</p></div><button class="secondary" onclick="showPage('nasabah')">← Kembali</button></div>
+<div id="profileContent"></div>
+</section>
+</main></div>
+
+<script>
+const KEY='TBSVI8_Sponsorship_Tracker_V1';
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||[
+{client:'PT Maju Bersama',date:'2026-09-08',event:'Seminar Pendidikan',amount:10000000,pic:'Rina',note:''},
+{client:'PT Global Media',date:'2026-09-05',event:'Media Gathering',amount:7500000,pic:'Budi',note:''},
+{client:'PT Nusantara Energi',date:'2026-09-03',event:'Turnamen Golf',amount:15000000,pic:'Sari',note:''},
+{client:'PT Citra Karya',date:'2026-08-28',event:'HUT Perusahaan',amount:5000000,pic:'Andi',note:''},
+{client:'PT Sejahtera Abadi',date:'2026-08-26',event:'Festival Budaya',amount:10000000,pic:'Rina',note:''},
+{client:'PT Maju Bersama',date:'2026-07-12',event:'Event ABC',amount:10000000,pic:'Sari',note:''},
+{client:'PT Global Media',date:'2026-06-04',event:'Gathering',amount:5000000,pic:'Budi',note:''}
+];
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function rupiah(n){return 'Rp '+Number(n||0).toLocaleString('id-ID')}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function fmtDate(d){return new Date(d+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'})}
+function showPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));render()}
+function render(){
+const clients=[...new Set(data.map(x=>x.client))],total=data.reduce((a,x)=>a+Number(x.amount),0);
+statClients.textContent=clients.length;statRequests.textContent=data.length;statTotal.textContent=rupiah(total);
+const ym=new Date().toISOString().slice(0,7);statMonth.textContent=rupiah(data.filter(x=>x.date.startsWith(ym)).reduce((a,x)=>a+Number(x.amount),0));
+const sorted=[...data].sort((a,b)=>b.date.localeCompare(a.date));
+recent.innerHTML='<table class="table"><tr><th>Tanggal</th><th>Nasabah</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th></tr>'+sorted.slice(0,6).map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.client)}</td><td>${esc(x.event)}</td><td>${rupiah(x.amount)}</td><td>${esc(x.pic)}</td></tr>`).join('')+'</table>';
+const sums={};data.forEach(x=>sums[x.client]=(sums[x.client]||0)+Number(x.amount));const tops=Object.entries(sums).sort((a,b)=>b[1]-a[1]).slice(0,5);
+topClients.innerHTML=tops.map((x,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)"><span>${i+1}. ${esc(x[0])}</span><b>${rupiah(x[1])}</b></div>`).join('')||'<span class="muted">Belum ada data.</span>';
+const months=Array.from({length:6},(_,i)=>{let d=new Date();d.setMonth(d.getMonth()-5+i);return d.toISOString().slice(0,7)}),vals=months.map(m=>data.filter(x=>x.date.startsWith(m)).reduce((a,x)=>a+Number(x.amount),0)),max=Math.max(...vals,1);
+bars.innerHTML=vals.map((v,i)=>`<div class="bar ${i===5?'current':''}" style="height:${Math.max(12,v/max*150)}px"><span>${months[i].slice(5)}</span></div>`).join('');
+summary.innerHTML=`<div style="padding:10px 0;border-bottom:1px solid var(--line)">Rata-rata per sponsorship <b style="float:right">${rupiah(data.length?total/data.length:0)}</b></div><div style="padding:10px 0;border-bottom:1px solid var(--line)">Nasabah unik <b style="float:right">${clients.length}</b></div><div style="padding:10px 0">Total transaksi <b style="float:right">${data.length}</b></div>`;
+renderClients();renderReport()
+}
+function renderClients(){const q=(clientSearch.value||'').toLowerCase(),clients=[...new Set(data.map(x=>x.client))].filter(c=>c.toLowerCase().includes(q)),sums={};data.forEach(x=>sums[x.client]=(sums[x.client]||0)+Number(x.amount));clientList.innerHTML=clients.map(c=>`<div class="card client" onclick='profile(${JSON.stringify(c)})'><strong>${esc(c)}</strong><small>${data.filter(x=>x.client===c).length} sponsorship · ${rupiah(sums[c])}</small></div>`).join('')||'<div class="muted">Nasabah belum ditemukan.</div>'}
+function profile(c){profileName.textContent=c;const rows=data.filter(x=>x.client===c).sort((a,b)=>b.date.localeCompare(a.date)),total=rows.reduce((a,x)=>a+Number(x.amount),0);profileContent.innerHTML=`<div class="profile"><div class="card"><div class="muted">TOTAL SPONSORSHIP</div><div class="big">${rupiah(total)}</div><div class="muted">${rows.length} kali sponsorship</div></div><div class="card"><h3>History</h3><table class="table"><tr><th>Tanggal</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th></tr>${rows.map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.event)}</td><td>${rupiah(x.amount)}</td><td>${esc(x.pic)}</td></tr>`).join('')}</table></div></div>`;showPage('profile')}
+function newNasabah(){showPage('sponsorship');fClient.focus()}
+function renderReport(){const q=(rSearch.value||'').toLowerCase(),rows=data.filter(x=>[x.client,x.pic,x.event].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));reportTable.innerHTML='<table class="table"><tr><th>Tanggal</th><th>Nasabah</th><th>Kegiatan</th><th>Nominal</th><th>PIC</th></tr>'+rows.map(x=>`<tr><td>${fmtDate(x.date)}</td><td>${esc(x.client)}</td><td>${esc(x.event)}</td><td>${rupiah(x.amount)}</td><td>${esc(x.pic)}</td></tr>`).join('')+'</table>'}
+function exportCSV(){const rows=[['Tanggal','Nasabah','Kegiatan','Nominal','PIC','Catatan'],...data.map(x=>[x.date,x.client,x.event,x.amount,x.pic,x.note])],csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\\n'),blob=new Blob(["\ufeff"+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='TBSVI8_Sponsorship_Report.csv';a.click();URL.revokeObjectURL(a.href)}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+clientSearch.addEventListener('input',renderClients);rSearch.addEventListener('input',renderReport);
+globalSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=e.target.value.toLowerCase(),found=data.find(x=>[x.client,x.event,x.pic].join(' ').toLowerCase().includes(q));found?profile(found.client):showPage('nasabah')}});
+sponsorForm.addEventListener('submit',e=>{e.preventDefault();data.push({client:fClient.value.trim(),date:fDate.value,event:fEvent.value.trim(),amount:Number(fAmount.value),pic:fPic.value.trim(),note:fNote.value.trim()});save();e.target.reset();fDate.value=new Date().toISOString().slice(0,10);showPage('dashboard');alert('Sponsorship berhasil disimpan.')});
+today.textContent=new Date().toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});fDate.value=new Date().toISOString().slice(0,10);render();
+</script>
+</body>
+</html>
